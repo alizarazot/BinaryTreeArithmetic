@@ -12,6 +12,8 @@ public class Token {
         SUB,
         MUL,
         DIV,
+        LPAR,
+        RPAR,
     }
     Operator valueOperator;
     

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BinaryTreeArithmetic {
 
     public static void main(String[] args) {
-        String expr = "3*3*3";
+        String expr = "1+(2+3)+4";
         System.out.println("Expr: " + expr);
 
         ArrayList<Token> tokens;
@@ -77,7 +77,7 @@ public class BinaryTreeArithmetic {
         BinaryTree tree = null;
 
         for (int i = 0; i < tokens.size(); i++) {
-            if (tokens.get(i).type == Token.Type.OPERATOR) {
+            if (tokens.get(i).type == Token.Type.OPERATOR && tokens.get(i).valueOperator != Token.Operator.LPAR) {
                // El token anterior debió ser un número, por lo que se debe
                // añadir el operador como un nodo padre del actual.
 
@@ -117,9 +117,13 @@ public class BinaryTreeArithmetic {
                   node.right = new BinaryTree(tokens.get(i+2));
                   i += 2;
                }
-            } else {
+            } else if (tokens.get(i).type == Token.Type.NUMBER) {
                // Es un número escalar (sin más operadores).
                node = new BinaryTree(tokens.get(i));
+            } else if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
+               ArrayList<Token> subtokens = consumePar(tokens, i);
+               i += subtokens.size()+1;
+               node = toBinaryTree(subtokens);
             }
 
             if (tree == null) {
@@ -147,6 +151,30 @@ public class BinaryTreeArithmetic {
         return tree;
     }
 
+    public static ArrayList<Token> consumePar(ArrayList<Token> tokens, int i) {
+               // Recorremos hasta encontrar el paréntesis de cierre, 
+               // y generamos los nodos de forma recursiva.
+               
+               ArrayList<Token> subtokens = new ArrayList<Token>();
+
+               int lparCount = 1;
+               i++;
+               while (lparCount != 0) {
+                  if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
+                     lparCount++;
+                  }
+                  if (tokens.get(i).valueOperator == Token.Operator.RPAR) {
+                     lparCount--;
+                  }
+
+                  subtokens.add(tokens.get(i));
+                  i++;
+               }
+
+               subtokens.remove(subtokens.size()-1);
+               return subtokens;
+    }
+
     public static ArrayList<Token> tokenize(String expr) throws InvalidCharException {
         ArrayList<Token> tokens = new ArrayList<Token>();
         for (int i = 0; i < expr.length(); i++) {
@@ -168,6 +196,14 @@ public class BinaryTreeArithmetic {
             }
             if (expr.charAt(i) == '/') {
                 tokens.add(new Token(Token.Type.OPERATOR, Token.Operator.DIV));
+                continue;
+            }
+            if (expr.charAt(i) == '(') {
+                tokens.add(new Token(Token.Type.OPERATOR, Token.Operator.LPAR));
+                continue;
+            }
+            if (expr.charAt(i) == ')') {
+                tokens.add(new Token(Token.Type.OPERATOR, Token.Operator.RPAR));
                 continue;
             }
 
