@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BinaryTreeArithmetic {
 
     public static void main(String[] args) {
-        String expr = "5 + 3*4 - 2";
+        String expr = "3/3*3";
         System.out.println("Expr: " + expr);
 
         ArrayList<Token> tokens;
@@ -77,17 +77,6 @@ public class BinaryTreeArithmetic {
         BinaryTree tree = null;
 
         for (int i = 0; i < tokens.size(); i++) {
-            if (tree == null) {
-                if (tokens.get(i).type != Token.Type.NUMBER) {
-                    // El primer token debe ser un número.
-                    System.out.println("TODO: Add exception.");
-                    return tree;
-                }
-
-                tree = new BinaryTree(tokens.get(i));
-                continue;
-            }
-
             if (tokens.get(i).type == Token.Type.OPERATOR) {
                // El token anterior debió ser un número, por lo que se debe
                // añadir el operador como un nodo padre del actual.
@@ -113,12 +102,30 @@ public class BinaryTreeArithmetic {
                node = new BinaryTree(tokens.get(i+1));
                node.left = new BinaryTree(tokens.get(i));
                node.right = new BinaryTree(tokens.get(i+2));
-               i+=2;
-            } else {
-               // El operador no tiene prioridad normal, se anexa sin
-               // problemas.
+               i += 2;
 
+               BinaryTree prevNode = node;
+
+               while (i+1 < tokens.size()
+                  && (tokens.get(i+1).valueOperator == Token.Operator.MUL
+                  || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
+                  // Son varias multiplicaciones/divisiones seguidas.
+
+                  BinaryTree oldPrevNode = prevNode.right;
+                  prevNode.right = new BinaryTree(tokens.get(i+1));
+                  prevNode.right.left = oldPrevNode;
+                  prevNode.right.right = new BinaryTree(tokens.get(i+2));
+                  prevNode = prevNode.right;
+                  i += 2;
+               }
+            } else {
+               // Es un número escalar (sin más operadores).
                node = new BinaryTree(tokens.get(i));
+            }
+
+            if (tree == null) {
+                tree = node;
+                continue;
             }
 
             // Buscar un lugar para el nodo.
