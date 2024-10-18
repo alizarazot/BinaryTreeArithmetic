@@ -3,36 +3,6 @@ package com.ufpso.binarytreearithmetic;
 import java.util.ArrayList;
 
 public class BinaryTreeArithmetic {
-
-  public static void main(String[] args) {
-    String expr = "((2+4)*(1+2)/(10/5)) - 6 - 3/3*3";
-    System.out.println("Expr: " + expr);
-
-    ArrayList<Token> tokens;
-    try {
-      tokens = BinaryTreeArithmetic.tokenize(expr);
-    } catch (InvalidCharException e) {
-      System.out.println(e);
-      return;
-    }
-
-    for (Token token : tokens) {
-      if (token.type == Token.Type.NUMBER) {
-        System.out.printf("Number: %f\n", token.valueNumber);
-        continue;
-      }
-
-      if (token.type == Token.Type.OPERATOR) {
-        System.out.printf("Operator: %s\n", token.valueOperator);
-        continue;
-      }
-    }
-
-    BinaryTree tree = toBinaryTree(tokens);
-
-    System.out.printf("Result: %f\n", executeBinaryTree(tree));
-  }
-
   public static double executeBinaryTree(BinaryTree tree) {
     if (tree.token.type == Token.Type.NUMBER) {
       // Este DEBE SER un nodo hoja.
@@ -53,7 +23,7 @@ public class BinaryTreeArithmetic {
     return executeOperand(left, tree.token.valueOperator, right);
   }
 
-  public static double executeOperand(double left, Token.Operator operator, double right) {
+  private static double executeOperand(double left, Token.Operator operator, double right) {
     if (operator == Token.Operator.ADD) {
       return left + right;
     }
@@ -143,7 +113,7 @@ public class BinaryTreeArithmetic {
     return tree;
   }
 
-  public static BinaryTree addToTree(BinaryTree tree, BinaryTree node) {
+  private static BinaryTree addToTree(BinaryTree tree, BinaryTree node) {
     if (tree == null) {
       return node;
     }
@@ -167,7 +137,7 @@ public class BinaryTreeArithmetic {
     return tree;
   }
 
-  public static ArrayList<Token> consumePar(ArrayList<Token> tokens, int i) {
+  private static ArrayList<Token> consumePar(ArrayList<Token> tokens, int i) {
     // Recorremos hasta encontrar el paréntesis de cierre,
     // y generamos los nodos de forma recursiva.
 
