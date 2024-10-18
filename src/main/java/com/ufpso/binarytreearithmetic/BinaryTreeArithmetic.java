@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BinaryTreeArithmetic {
 
     public static void main(String[] args) {
-        String expr = "1+(2+3)+4";
+        String expr = "2*3/3*4";
         System.out.println("Expr: " + expr);
 
         ArrayList<Token> tokens;
@@ -92,32 +92,30 @@ public class BinaryTreeArithmetic {
 
             BinaryTree node = null;
 
-            if (i+1 < tokens.size()
-                  && (tokens.get(i+1).valueOperator == Token.Operator.MUL
-                  || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
-               // Si el token siguiente al actual es un operador con
-               // prioridad a la suma o resta, crear un nuevo nodo con
-               // el caso especial.
+            // Si el token siguiente al actual es un operador con
+            // prioridad a la suma o resta, crear un nuevo nodo con
+            // el caso especial.
+            while (i+1 < tokens.size()
+               && (tokens.get(i+1).valueOperator == Token.Operator.MUL
+               || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
+               // Son varias multiplicaciones/divisiones seguidas.
+               
+               if (node == null) {
+                  node = new BinaryTree(tokens.get(i));
+               }
 
+               BinaryTree oldNode = node;
                node = new BinaryTree(tokens.get(i+1));
-               node.left = new BinaryTree(tokens.get(i));
+               node.left = oldNode;
                node.right = new BinaryTree(tokens.get(i+2));
                i += 2;
+            }
+            if (node != null) {
+               tree = addToTree(tree, node);
+               continue;
+            }
 
-               BinaryTree prevNode = node;
-
-               while (i+1 < tokens.size()
-                  && (tokens.get(i+1).valueOperator == Token.Operator.MUL
-                  || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
-                  // Son varias multiplicaciones/divisiones seguidas.
-
-                  BinaryTree oldNode = node;
-                  node = new BinaryTree(tokens.get(i+1));
-                  node.left = oldNode;
-                  node.right = new BinaryTree(tokens.get(i+2));
-                  i += 2;
-               }
-            } else if (tokens.get(i).type == Token.Type.NUMBER) {
+            if (tokens.get(i).type == Token.Type.NUMBER) {
                // Es un número escalar (sin más operadores).
                node = new BinaryTree(tokens.get(i));
             } else if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
@@ -126,29 +124,34 @@ public class BinaryTreeArithmetic {
                node = toBinaryTree(subtokens);
             }
 
+            tree = addToTree(tree, node);
+        }
+
+        return tree;
+    }
+
+    public static BinaryTree addToTree(BinaryTree tree, BinaryTree node) {
             if (tree == null) {
-                tree = node;
-                continue;
+               return node;
             }
 
             // Buscar un lugar para el nodo.
             if (tree.left == null) {
                tree.left = node;
-               continue;
+               return tree;
             }
 
             if (tree.right == null) {
                tree.right = node;
-               continue;
+               return tree;
             }
 
             // No hay espacio abajo, añadir el nodo arriba.
             BinaryTree oldTree = tree;
             tree = node;
             tree.right = oldTree;
-        }
 
-        return tree;
+            return tree;
     }
 
     public static ArrayList<Token> consumePar(ArrayList<Token> tokens, int i) {
