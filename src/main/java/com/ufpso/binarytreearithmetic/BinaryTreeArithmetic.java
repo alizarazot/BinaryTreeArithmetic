@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BinaryTreeArithmetic {
 
     public static void main(String[] args) {
-        String expr = "5+6+2/2*5-1";
+        String expr = "5 + 3*4 - 2";
         System.out.println("Expr: " + expr);
 
         ArrayList<Token> tokens;
@@ -76,34 +76,66 @@ public class BinaryTreeArithmetic {
     public static BinaryTree toBinaryTree(ArrayList<Token> tokens) {
         BinaryTree tree = null;
 
-        for (Token token : tokens) {
+        for (int i = 0; i < tokens.size(); i++) {
             if (tree == null) {
-                if (token.type != Token.Type.NUMBER) {
+                if (tokens.get(i).type != Token.Type.NUMBER) {
                     // El primer token debe ser un número.
                     System.out.println("TODO: Add exception.");
                     return tree;
                 }
 
-                tree = new BinaryTree(token);
+                tree = new BinaryTree(tokens.get(i));
                 continue;
             }
 
-            if (token.type == Token.Type.OPERATOR) {
-                BinaryTree oldTree = tree;
-                tree = new BinaryTree(token);
-                tree.left = oldTree;
-                continue;
+            if (tokens.get(i).type == Token.Type.OPERATOR) {
+               // El token anterior debió ser un número, por lo que se debe
+               // añadir el operador como un nodo padre del actual.
+
+               BinaryTree oldTree = tree;
+               tree = new BinaryTree(tokens.get(i));
+               tree.left = oldTree;
+
+               continue;
             }
-            
+
+            // Ahora el nodo debe ser un número.
+
+            BinaryTree node = null;
+
+            if (i+1 < tokens.size()
+                  && (tokens.get(i+1).valueOperator == Token.Operator.MUL
+                  || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
+               // Si el token siguiente al actual es un operador con
+               // prioridad a la suma o resta, crear un nuevo nodo con
+               // el caso especial.
+
+               node = new BinaryTree(tokens.get(i+1));
+               node.left = new BinaryTree(tokens.get(i));
+               node.right = new BinaryTree(tokens.get(i+2));
+               i+=2;
+            } else {
+               // El operador no tiene prioridad normal, se anexa sin
+               // problemas.
+
+               node = new BinaryTree(tokens.get(i));
+            }
+
+            // Buscar un lugar para el nodo.
             if (tree.left == null) {
-                tree.left = new BinaryTree(token);
-                continue;
+               tree.left = node;
+               continue;
             }
 
             if (tree.right == null) {
-                tree.right = new BinaryTree(token);
-                continue;
+               tree.right = node;
+               continue;
             }
+
+            // No hay espacio abajo, añadir el nodo arriba.
+            BinaryTree oldTree = tree;
+            tree = node;
+            tree.right = oldTree;
         }
 
         return tree;
