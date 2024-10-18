@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BinaryTreeArithmetic {
 
     public static void main(String[] args) {
-        String expr = "2*3/3*4";
+        String expr = "(2+3+3*4)";
         System.out.println("Expr: " + expr);
 
         ArrayList<Token> tokens;
@@ -88,25 +88,17 @@ public class BinaryTreeArithmetic {
                continue;
             }
 
-            // Ahora el nodo debe ser un número.
-
-            BinaryTree node = null;
-
             // Si el token siguiente al actual es un operador con
             // prioridad a la suma o resta, crear un nuevo nodo con
             // el caso especial.
+            BinaryTree node = null;
             while (i+1 < tokens.size()
                && (tokens.get(i+1).valueOperator == Token.Operator.MUL
                || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
                // Son varias multiplicaciones/divisiones seguidas.
                
-               if (node == null) {
-                  node = new BinaryTree(tokens.get(i));
-               }
-
-               BinaryTree oldNode = node;
                node = new BinaryTree(tokens.get(i+1));
-               node.left = oldNode;
+               node.left = new BinaryTree(tokens.get(i));
                node.right = new BinaryTree(tokens.get(i+2));
                i += 2;
             }
@@ -117,14 +109,17 @@ public class BinaryTreeArithmetic {
 
             if (tokens.get(i).type == Token.Type.NUMBER) {
                // Es un número escalar (sin más operadores).
-               node = new BinaryTree(tokens.get(i));
-            } else if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
+               tree = addToTree(tree,new BinaryTree(tokens.get(i)));
+               continue;
+            }
+
+            if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
                ArrayList<Token> subtokens = consumePar(tokens, i);
                i += subtokens.size()+1;
                node = toBinaryTree(subtokens);
+               tree = addToTree(tree, node);
+               continue;
             }
-
-            tree = addToTree(tree, node);
         }
 
         return tree;
