@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class BinaryTreeArithmetic {
 
     public static void main(String[] args) {
-        String expr = "(2+3+3*4)";
+        String expr = "6 - 1*3";
         System.out.println("Expr: " + expr);
 
         ArrayList<Token> tokens;
@@ -96,10 +96,24 @@ public class BinaryTreeArithmetic {
                && (tokens.get(i+1).valueOperator == Token.Operator.MUL
                || tokens.get(i+1).valueOperator == Token.Operator.DIV)) {
                // Son varias multiplicaciones/divisiones seguidas.
-               
+
+               BinaryTree leftNode = new BinaryTree(tokens.get(i));
+            if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
+               ArrayList<Token> subtokens = consumePar(tokens, i);
+               i += subtokens.size()+2;
+               leftNode = toBinaryTree(subtokens);
+            }
+
+            BinaryTree rightNode = new BinaryTree(tokens.get(i+2));
+            if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
+               ArrayList<Token> subtokens = consumePar(tokens, i);
+               i += subtokens.size()+2;
+               rightNode = toBinaryTree(subtokens);
+            }
+
                node = new BinaryTree(tokens.get(i+1));
-               node.left = new BinaryTree(tokens.get(i));
-               node.right = new BinaryTree(tokens.get(i+2));
+               node.left = leftNode;
+               node.right = rightNode;
                i += 2;
             }
             if (node != null) {
