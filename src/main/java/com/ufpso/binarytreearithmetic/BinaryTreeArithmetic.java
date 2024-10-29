@@ -42,7 +42,7 @@ public class BinaryTreeArithmetic {
       default:
         System.out.println("Program is broken...");
         System.out.printf("Invalid operator: '%s'.\n", operator);
-        return (1 << 64) - 1;
+        return (1 << 63) - 1;
     }
   }
 
@@ -85,30 +85,32 @@ public class BinaryTreeArithmetic {
           // Si no es un número, debe ser un paréntesis.
           if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
             ArrayList<Token> subtokens = consumePar(tokens, i);
-            // Se suma 2 porque los "sub-tokens" no incluten LPAR ni RPAR.
-            i += subtokens.size() + 2;
+            // Sumamos 1 para saltar RPAR.
+            i += subtokens.size() + 1;
             node = toBinaryTree(subtokens);
           }
         }
 
-        // Se suma 2 porque nos saltamos el número actual y el operador
-        // actual (fue procesado en el bloque anterior).
+        // Estamos en el número, avanzar al operador.
+        i++;
+        Token operator = tokens.get(i);
+
+        // Estamos en el operador, avanzar al siguiente número o paréntesis.
+        i++;
+        BinaryTree rightNode = new BinaryTree(tokens.get(i));
+
         // Si no es un número, debe ser un paréntesis.
-        BinaryTree rightNode = new BinaryTree(tokens.get(i + 2));
         if (tokens.get(i).valueOperator == Token.Operator.LPAR) {
           ArrayList<Token> subtokens = consumePar(tokens, i);
-          i += subtokens.size() + 2;
+          i += subtokens.size() + 1; // Sumamos 1 para quedar en RPAR.
           rightNode = toBinaryTree(subtokens);
         }
 
         // Añadir el operador como un padre del nodo actual.
         BinaryTree oldNode = node;
-        node =
-            new BinaryTree(
-                tokens.get(i + 1)); // Estamos en el número, el siguiente nodo es el operador.
+        node = new BinaryTree(operator);
         node.left = oldNode;
         node.right = rightNode;
-        i += 2;
       }
       if (node != null) {
         rootTree = addToTree(rootTree, node);
