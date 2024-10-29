@@ -217,11 +217,28 @@ public class BinaryTreeArithmetic {
 
       // El caracter actual no es un operador, por lo que debe ser un número.
       boolean parsingNumber = false;
+      boolean onDecimal = false;
+      int currDecimal = 0;
       double number = 0;
-      while (i < expr.length() && BinaryTreeArithmetic.isDigit(expr.charAt(i))) {
+      while (i < expr.length()
+          && (BinaryTreeArithmetic.isDigit(expr.charAt(i))
+              || BinaryTreeArithmetic.isDecimalSep(expr.charAt(i)))) {
         parsingNumber = true;
-        number += BinaryTreeArithmetic.char2digit(expr.charAt(i));
-        number *= 10;
+
+        if (BinaryTreeArithmetic.isDecimalSep(expr.charAt(i))) {
+          onDecimal = true;
+          i++;
+          continue;
+        }
+
+        if (onDecimal) {
+          number += BinaryTreeArithmetic.char2digit(expr.charAt(i)) * Math.pow(10, currDecimal);
+          currDecimal--;
+        } else {
+          number += BinaryTreeArithmetic.char2digit(expr.charAt(i));
+          number *= 10;
+        }
+
         i++;
       }
       if (parsingNumber) {
@@ -236,6 +253,10 @@ public class BinaryTreeArithmetic {
     }
 
     return tokens;
+  }
+
+  private static boolean isDecimalSep(char c) {
+    return c == '.' || c == ',';
   }
 
   private static boolean isDigit(char c) {

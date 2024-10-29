@@ -115,7 +115,8 @@ public class GUI extends javax.swing.JFrame {
     }
 
     BinaryTree tree = BinaryTreeArithmetic.toBinaryTree(tokens);
-    String text = new DecimalFormat("#.###").format(BinaryTreeArithmetic.executeBinaryTree(tree));
+    String text =
+        new DecimalFormat("#.##########").format(BinaryTreeArithmetic.executeBinaryTree(tree));
     lblResult.setText(text);
   } // GEN-LAST:event_btnCalculateActionPerformed
 
